@@ -1,0 +1,88 @@
+services:
+
+  naming_server:
+    build: ./naming_server
+    container_name: naming_server
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - ./naming_server/registry.json:/app/registry.json
+      - ./naming_server/authorized_workers.json:/app/authorized_workers.json
+
+  worker1:
+    build: ./worker
+
+    container_name: worker1
+    hostname: worker1
+
+    environment:
+      WORKER_NAME: printer-01
+      WORKER_PORT: 6001
+
+    depends_on:
+      - naming_server
+
+    ports:
+      - "6001:6001"
+
+  worker2:
+    build: ./worker
+
+    container_name: worker2
+    hostname: worker2
+
+    environment:
+      WORKER_NAME: printer-02
+      WORKER_PORT: 6002
+
+    depends_on:
+      - naming_server
+
+    ports:
+      - "6002:6002"
+
+  bad_token_worker:
+    build: ./worker
+
+    container_name: bad_token_worker
+    hostname: bad_token_worker
+
+    environment:
+      WORKER_NAME: printer-bad_token
+      WORKER_PORT: 6003
+      SECRET_TOKEN: TOKEN_FALSO
+
+    depends_on:
+      - naming_server
+
+    ports:
+      - "6003:6003"
+
+  worker3:
+    build: ./worker
+
+    container_name: worker3
+    hostname: worker3
+
+    environment:
+      WORKER_NAME: printer-03
+      WORKER_PORT: 6004
+
+    depends_on:
+      - naming_server
+
+    ports:
+      - "6004:6004"
+      
+  client:
+    build: ./client
+
+    container_name: client
+
+    stdin_open: true
+    tty: true
+
+    depends_on:
+      - naming_server
